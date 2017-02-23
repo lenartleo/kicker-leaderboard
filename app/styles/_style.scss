@@ -2,7 +2,7 @@
 html,
 body {
     background-color: #181818;
-    height: 100%;
+    height: 100% !important;
 }
 body {
     margin: 0;
@@ -10,12 +10,20 @@ body {
     height: auto;
     color: rgba(255, 255, 255, 0.6);
     font-family: 'Open Sans', sans-serif;
-    font-weight: 400;
+    font-weight: 300;
     padding-top: 8rem;
+    background-color: #181818;
+    background-image: url(/images/main-bg.jpg);
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: 100% 100%;
+    text-align: center;
 }
 footer {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
+    background-color: transparent !important;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    color: #555;
 }
 
 h1,
@@ -77,15 +85,22 @@ h6 strong,
         font-weight: 700;
     }
 }
+.ui.inverted.button.basic {
+    box-shadow: 0px 0px 0px 1px rgba(255,255,255,0.3) inset !important;
+}
+.ui.basic.inverted.buttons .button:hover,
+.ui.basic.inverted.button:hover {
+    box-shadow: 0px 0px 0px 1px #ffffff inset !important;
+}
 .ui.container {
     max-width: 800px !important;
 }
 
 .ui.menu {
     background: #181818;
-    -webkit-box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
--moz-box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
-box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
+    -webkit-box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.75);
+    box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.75);
 }
 .menu.main {
     position: fixed;
@@ -144,6 +159,10 @@ box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
 .ui.menu .brand {
     padding-top: 4px;
     padding-bottom: 4px;
+    font-weight: 300 !important;
+    strong {
+        margin-right: 0.5rem;
+    }
     img {
         height: 46px !important;
         width: auto !important;
@@ -209,7 +228,10 @@ box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
 
 .ui.modal > .content.main {
     padding-top: 0;
-    margin-top: -1rem;
+    margin-top: 0;
+    .ui.header {
+        text-align: center;
+    }
 }
 
 .ui.modal > .close {
@@ -252,8 +274,8 @@ box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
     background-color: #222;
 }
 .playing .ui.grid {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 }
 .playing .ui.list {
     text-align: center;
@@ -286,9 +308,13 @@ box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
         font-size: 1.1rem;
         line-height: 1.2rem;
     }
+    .item .icon {
+        font-size: 9.3rem;
+        line-height: 9.3rem
+    }
 }
 .game.options {
-    padding-bottom: 4rem;
+    padding-bottom: 2rem;
     text-align: center;
 }
 .ui.divider {
@@ -303,7 +329,7 @@ box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
 }
 .table.graphic img {
     width: 100% !important;
-    margin-top: 3rem;
+    margin-top: 9rem;
 }
 .player.rank {
     font-size: 2rem;
@@ -317,9 +343,38 @@ box-shadow: 0px 5px 10px 0px rgba(0,0,0,0.75);
     padding-top: 0.7rem;
     padding-right: 1rem;
 }
+.playing .avatar {
+    width: 100% !important;
+    height: auto !important;
+    max-width: 200px !important;
+}
 .teamOne .avatar {
-    border: 4px solid #E32F21;
+    border: 6px solid #fff !important;
 }
 .teamTwo .avatar {
-    border: 4px solid #0854C7;
+    border: 6px solid #000 !important;
+}
+
+
+.ui.form input:not([type]), .ui.form input[type="date"], .ui.form input[type="datetime-local"], .ui.form input[type="email"], .ui.form input[type="number"], .ui.form input[type="password"], .ui.form input[type="search"], .ui.form input[type="tel"], .ui.form input[type="time"], .ui.form input[type="text"], .ui.form input[type="file"], .ui.form input[type="url"],
+.ui.input input {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    box-shadow: none;
+}
+.ui.form input:not([type]):focus, .ui.form input[type="date"]:focus, .ui.form input[type="datetime-local"]:focus, .ui.form input[type="email"]:focus, .ui.form input[type="number"]:focus, .ui.form input[type="password"]:focus, .ui.form input[type="search"]:focus, .ui.form input[type="tel"]:focus, .ui.form input[type="time"]:focus, .ui.form input[type="text"]:focus, .ui.form input[type="file"]:focus, .ui.form input[type="url"]:focus,
+.ui.input.focus input, .ui.input input:focus {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    box-shadow: none;
+}
+.cancel.button {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+}
+.header.main {
+    margin-bottom: 0;
 }

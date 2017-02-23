@@ -44,43 +44,24 @@
       <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
     <!-- Main Menu -->
-    <div class="ui grid main menu inverted">
+    <div class="ui grid main borderless menu inverted">
         <div class="computer tablet only row">
             <div class="ui fixed menu huge navbar page grid">
-                <a href="#!" class="brand header item">
-                    FANMILES KICKER
-                </a>
+                <div class="brand header item">
+                    <strong>KICKER</strong> DASHBOARD
+                </div>
                 <div class="right menu">
                     <a class="item add player action" href="#!">
                         <i class="add icon"></i> Add Player
                     </a>
-                    <!-- <div class="ui dropdown right item">
-                        <img class="ui mini avatar image" src="/images/TEMP/avatar.jpg"> OPTIONS <i class="dropdown icon"></i>
-                        <div class="menu">
-                            <div class="ui divider show mobile"></div>
-                            <a class="item">
-                                <i class="add icon"></i> Add player
-                            </a>
-                            <a class="item">
-                                <i class="group icon"></i> Manage players
-                            </a>
-                            <a class="item">
-                                <i class="soccer icon"></i> Game history
-                            </a>
-                            <div class="ui divider"></div>
-                            <a class="item">
-                                <i class="sign out icon"></i> Settigns
-                            </a>
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
         <div class="mobile only row">
             <div class="ui fixed huge borderless navbar menu">
-                <a href="#!" class="brand header item">
-                    FANMILES KICKER
-                </a>
+                <div class="brand header item">
+                    <strong>KICKER</strong> DASHBOARD
+                </div>
                 <div class="right menu open">
                     <a href="" class="menu item">
                         <i class="content icon"></i>
@@ -88,29 +69,9 @@
                 </div>
             </div>
             <div class="ui vertical navbar menu expanded">
-                <a class="item">
-                    <i class="car icon"></i> Add player
+                <a class="item add player action" href="#!">
+                    <i class="add icon"></i> Add Player
                 </a>
-                <!-- <div class="ui item">
-                    <div class="text">
-                        <img class="ui avatar middle aligned image" src="/images/TEMP/avatar.jpg"> Lenart
-                    </div>
-                    <div class="menu">
-                        <a class="item show mobile">
-                            <i class="man icon"></i> Add player
-                        </a>
-                        <a class="item">
-                            <i class="gorup icon"></i> Manage players
-                        </a>
-                        <a class="item">
-                            <i class="gorup icon"></i> Game history
-                        </a>
-                        <div class="ui divider"></div>
-                        <a class="item">
-                            <i class="sign out icon"></i> Settigns
-                        </a>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div>
@@ -122,14 +83,14 @@
             <img src="images/account-modal-bg.jpg">
         </div>
         <div class="content main">
-            <div class="ui horizontal divider">
-                Add new player
-            </div>
+            <h3 class="ui inverted header">
+                ADD NEW PLAYER
+            </h3>
             <form class="ui big form">
                 <div class="field ">
                     <input type="text" name="player" placeholder="Player ID">
                 </div>
-                <div class="ui inverted big fluid button">
+                <div class="ui inverted big basic fluid button">
                     ADD
                 </div>
             </form>
@@ -143,9 +104,9 @@
             <img src="images/account-modal-bg.jpg">
         </div>
         <div class="content main">
-            <div class="ui horizontal divider">
-                Avaliable players
-            </div>
+            <h3 class="ui inverted header">
+                AVALIABLE PLAYERS
+            </h3>
             <form class="ui big form">
                 <div class="ui middle aligned selection inverted list">
                     <div class="item">
@@ -174,15 +135,21 @@
     <!-- Intro Header -->
     <div class="content">
         <div class="ui container">
-            <h4 class="ui horizontal divider header">
-                NEW GAME
-            </h4>
+            <h2 class="ui inverted header main">
+                <strong>NEW GAME</strong>
+                <div class="sub header">
+                    00:00
+                </div>
+            </h2>
             <div class="playing">
-                <div class="ui three column grid">
-                    <div class="column">
-                        <div class="ui middle aligned selection massive inverted list teamOne">
+                <div class="ui three column stackable grid">
+                    <div class="five wide column">
+                        <h4 class="ui inverted header main">
+                            TEAM <strong>LIGHT</strong>
+                        </h4>
+                        <div class="ui middle aligned selection big inverted list teamOne">
                             <div class="item">
-                                <img class="ui avatar tiny image" src="/images/TEMP/avatar.jpg">
+                                <img class="ui avatar small image" src="/images/TEMP/avatar.jpg">
                                 <div class="content">
                                     <div class="header">Lenart</div>
                                 </div>
@@ -193,13 +160,16 @@
                             </div>
                         </div>
                     </div>
-                    <div class="column">
+                    <div class="six wide column">
                         <div class="table graphic">
                             <img class="ui image" src="/images/table.png">
                         </div>
                     </div>
-                    <div class="column">
-                        <div class="ui middle aligned selection massive inverted list teamTwo">
+                    <div class="five wide column">
+                        <h4 class="ui inverted header main">
+                            TEAM <strong>DARK</strong>
+                        </h4>
+                        <div class="ui middle aligned selection big inverted list teamTwo">
                             <div class="item select player action add">
                                 <i class="male icon"></i>
                                 <small>Select player</small>
@@ -212,7 +182,7 @@
                     </div>
                 </div>
                 <div class="game options">
-                    <button class="ui inverted massive button">
+                    <button class="ui inverted massive basic button">
                         <i class="soccer icon"></i> START GAME
                     </button>
                 </div>
@@ -228,13 +198,12 @@
                         </div>
                     </div>
                     <div class="left floated content">
-                        <div class="player rank">
+                        <div class="left floated player rank">
                             1.
                         </div>
-                    </div>
-                    <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
-                    <div class="content">
-                        Lenart
+                        <div class="left floated content">
+                            <img class="ui avatar image" src="/images/TEMP/avatar.jpg"> Lenart
+                        </div>
                     </div>
                 </div>
                 <div class="item">
@@ -244,13 +213,12 @@
                         </div>
                     </div>
                     <div class="left floated content">
-                        <div class="player rank">
-                            1.
+                        <div class="left floated player rank">
+                            2.
                         </div>
-                    </div>
-                    <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
-                    <div class="content">
-                        Lenart
+                        <div class="left floated content">
+                            <img class="ui avatar image" src="/images/TEMP/avatar.jpg"> Lenart
+                        </div>
                     </div>
                 </div>
                 <div class="item">
@@ -260,45 +228,12 @@
                         </div>
                     </div>
                     <div class="left floated content">
-                        <div class="player rank">
-                            1.
+                        <div class="left floated player rank">
+                            3.
                         </div>
-                    </div>
-                    <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
-                    <div class="content">
-                        Lenart
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="right floated content">
-                        <div class="player points">
-                            <strong>1000</strong> Points
+                        <div class="left floated content">
+                            <img class="ui avatar image" src="/images/TEMP/avatar.jpg"> Lenart
                         </div>
-                    </div>
-                    <div class="left floated content">
-                        <div class="player rank">
-                            1.
-                        </div>
-                    </div>
-                    <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
-                    <div class="content">
-                        Lenart
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="right floated content">
-                        <div class="player points">
-                            <strong>1000</strong> Points
-                        </div>
-                    </div>
-                    <div class="left floated content">
-                        <div class="player rank">
-                            1.
-                        </div>
-                    </div>
-                    <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
-                    <div class="content">
-                        Lenart
                     </div>
                 </div>
             </div>
@@ -310,7 +245,7 @@
         <div class="ui container center aligned">
             <div>
                 <small>
-                    2016 © <strong>FANMILES KICKER</strong>. All rights reserved.
+                    2017 © <strong>FANMILES</strong> KICKER DASHBOARD.
                 </small>
             </div>
         </div>
