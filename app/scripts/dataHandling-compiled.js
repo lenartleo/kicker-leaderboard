@@ -137,13 +137,13 @@ function leaderBoard(state) {
 let state;
 
 function getLocalState() {
-//    const data = localStorage.getItem('state');
-//
-//    return (
-//        _.isNull(data)
-//            ? { players: {}, games: [] }
-//            : JSON.parse(data)
-//    )
+  const data = localStorage.getItem('state');
+
+  return (
+    _.isNull(data)
+      ? { players: {}, games: [] }
+      : JSON.parse(data)
+  )
   return (
     _.isUndefined(state)
       ? { players: {}, games: [] }
@@ -153,9 +153,9 @@ function getLocalState() {
 
 function setLocalState(data) {
   state = data;
-//    localStorage.setItem('state', JSON.stringify(
-//        data
-//    ));
+  localStorage.setItem('state', JSON.stringify(
+    data
+  ));
 }
 
 function modifyState(redFn, arg) {
@@ -180,20 +180,20 @@ function _getLeaderBoard() {
 }
 
 //
-_addPlayer('Lenart');
-_addPlayer('Jens');
-_addPlayer('Gerrit');
-
-_reportGame({
-  teamA: {
-    score: 10,
-    players: ['Jens', 'Gerrit']
-  },
-  teamB: {
-    score: 0,
-    players: ['Lenart']
-  }
-});
+// _addPlayer('Lenart');
+// _addPlayer('Jens');
+// _addPlayer('Gerrit');
+//
+// _reportGame({
+//   teamA: {
+//     score: 10,
+//     players: ['Jens', 'Gerrit']
+//   },
+//   teamB: {
+//     score: 0,
+//     players: ['Lenart']
+//   }
+// });
 
 const getPlayer = (playerName) => {
   return getLocalState().players[playerName];
@@ -204,7 +204,7 @@ const drawList = ({
 }) => {
   list.html('');
 
-  if(!filter) {
+  if (!filter) {
     filter = (player) => player;
   }
 
@@ -260,6 +260,8 @@ class Game {
       players: []
     };
     this.teamB = _.cloneDeep(this.teamA);
+
+    this.inProgress = false;
   }
 
   setPlayer({ team, index, player }) {
@@ -273,9 +275,22 @@ class Game {
   getReport() {
     return _.pick(this, ['teamA', 'teamB']);
   }
+
+  setFinalScore(teamAScore, teamBScore) {
+    this.teamA.score = teamAScore;
+    this.teamB.score = teamBScore;
+  }
+
+  start() {
+    if (this.teamA.players.length < 1 || this.teamB.players.length < 1) {
+      throw new Error('Not enough players');
+    }
+
+    this.inProgress = true;
+  }
 }
 
-const redrawGame = (game) => {
+const redrawGame = () => {
   [
     {
       team: 'A',
@@ -295,7 +310,7 @@ const redrawGame = (game) => {
     }
   ].forEach(({ team, index }) => {
     const $el = $(`#team${team}Player${index}`);
-    const playerName = _.get(game, `team${team}.players[${index}]`);
+    const playerName = _.get(currentGame, `team${team}.players[${index}]`);
 
     if (playerName) {
       const player = getPlayer(playerName);
@@ -304,6 +319,14 @@ const redrawGame = (game) => {
       $el.html(playerNotSetTemplate());
     }
   });
+
+  if (currentGame.inProgress) {
+    $('#gameInProgress').show();
+    $('#newGame').hide();
+  } else {
+    $('#gameInProgress').hide();
+    $('#newGame').show();
+  }
 };
 
 const selectPlayerModal = $('#selectPlayerModal').modal();
@@ -358,8 +381,33 @@ const app = () => {
     selectPlayerModal.player = {};
     selectPlayerModal.modal('hide');
 
-    redrawGame(currentGame);
+    redrawGame();
     drawSelectPlayerList();
+  });
+
+  $('#startGameButton').on('click', () => {
+    try {
+      currentGame.start();
+
+      redrawGame();
+    } catch (e) {
+      alert(e);
+    }
+  });
+
+  $('#finishGameButton').on('click', () => {
+    const teamAScore = Number($('#teamAScoreInput').val());
+    const teamBScore = Number($('#teamBScoreInput').val());
+
+    currentGame.setFinalScore(teamAScore, teamBScore);
+
+    const report = _.cloneDeep(currentGame.getReport());
+    _reportGame(report);
+
+    currentGame = new Game();
+
+    redrawGame();
+    redrawPlayersLists();
   });
 
   redrawGame();

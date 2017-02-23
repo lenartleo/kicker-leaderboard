@@ -111,7 +111,7 @@ h6 strong,
     margin: 0;
     border-radius: 0;
     border: 0;
-    
+
 }
 
 .ui.menu.main.menu .mobile.row {
@@ -377,4 +377,9 @@ h6 strong,
 }
 .header.main {
     margin-bottom: 0;
+}
+
+.ui.list > .item > i.icon {
+  padding-right: 0;
+  padding-bottom: 12px;
 }
