@@ -4,14 +4,15 @@
   "dependencies": {
     "jquery": "~2.1.1",
     "modernizr": "~2.8.1",
-    "semantic": "semantic-ui#^2.2.2"
+    "semantic": "semantic-ui#^2.2.2",
+    "lodash": "^4.17.4"
   },
   "overrides": {
-  	"semantic": {
-  		"main": [
-  			"dist/semantic.css",
-    		"dist/semantic.js"
-  		]
-  	}
+    "semantic": {
+      "main": [
+        "dist/semantic.css",
+        "dist/semantic.js"
+      ]
+    }
   }
 }

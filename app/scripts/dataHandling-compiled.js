@@ -1,241 +1,442 @@
 'use strict';
 
-//const _ = require('lodash');
+let currentGame;
 
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+const playersList = $('#playersList');
+const selectPlayerList = $('#selectPlayerList');
+const newPlayerForm = $('#newPlayerForm');
+const newPlayerNameInput = $('#newPlayerNameInput');
 
-var STARTING_SCORE = 0;
-var NORMALISATION = 400;
-var K = 32;
+// TEMPLATES
+// Use custom template delimiters.
+_.templateSettings.interpolate = /{{([\s\S]+?)}}/g;
+const userListItemTemplate = _.template($('#userListItemTemplate').text());
+const selectPlayerListItemTemplate = _.template($('#selectPlayerListItemTemplate').text());
+const playerNotSetTemplate = _.template($('#playerNotSetTemplate').text());
+const playerSetTemplate = _.template($('#playerSetTemplate').text());
+
+// END TEMPLATES
+
+const STARTING_SCORE = 1500;
+const NORMALISATION = 400;
+const K = 32;
 
 function addPlayer(oldState, name) {
 
-    var players = oldState.players;
+  const players = oldState.players;
 
-    if (_.isUndefined(players[name])) {
+  if (_.isUndefined(players[name])) {
 
-        return {
-            games: oldState.games,
-            players: _.extend({}, players, _defineProperty({}, name, {
-                name: name,
-                score: STARTING_SCORE
-            }))
-        };
-    } else {
-
-        return oldState;
+    return {
+      games: oldState.games,
+      players: _.extend({}, players, {
+        [name]: {
+          name,
+          score: STARTING_SCORE
+        }
+      })
     }
+
+  } else {
+
+    return oldState
+
+  }
+
 }
 
 function reportGame(oldState, game) {
 
-    var playersA = game.teamA.players.map(function (id) {
-        return oldState.players[id];
-    });
-    var playersB = game.teamB.players.map(function (id) {
-        return oldState.players[id];
-    });
+  const playersA = game.teamA.players.map(id => {
+    return oldState.players[id]
+  });
+  const playersB = game.teamB.players.map(id => {
+    return oldState.players[id]
+  });
 
-    var scoreA = game.teamA.score;
-    var scoreB = game.teamB.score;
+  const scoreA = game.teamA.score;
+  const scoreB = game.teamB.score;
 
-    var s = scoreA / (scoreA + scoreB); /*(
-                                        (game.teamA.score === game.teamB.score)
-                                        ? 0.5
-                                        : (
-                                        (game.teamA.score > game.teamB.score)
-                                        ? 1
-                                        : 0
-                                        )
-                                        );*/
+  const s = scoreA / ( scoreA + scoreB );
+  /*(
+   (game.teamA.score === game.teamB.score)
+   ? 0.5
+   : (
+   (game.teamA.score > game.teamB.score)
+   ? 1
+   : 0
+   )
+   );*/
 
-    var updated = updatedPlayers(playersA, playersB, s);
+  const updated = updatedPlayers(playersA, playersB, s);
 
-    var modification = {};
-    updated.forEach(function (player) {
-        modification[player.name] = player;
-    });
+  const modification = {};
+  updated.forEach(player => {
+    modification[player.name] = player
+  });
 
-    return {
-        games: _.concat(oldState.games, game),
-        players: _.extend({}, oldState.players, modification)
-    };
+  return {
+    games: _.concat(oldState.games, game),
+    players: _.extend({}, oldState.players, modification)
+  }
+
 }
 
 function updatedPlayers(playersA, playersB, s) {
 
-    return _.concat(playersA.map(function (player) {
-        return _.extend({}, player, {
-            score: updatedScore(player, playersB, s)
-        });
-    }), playersB.map(function (player) {
-        return _.extend({}, player, {
-            score: updatedScore(player, playersA, 1 - s)
-        });
-    }));
+  return _.concat(
+    playersA.map(player => _.extend({}, player, {
+      score: updatedScore(player, playersB, s)
+    })),
+    playersB.map(player => _.extend({}, player, {
+      score: updatedScore(player, playersA, 1 - s)
+    }))
+  )
+
 }
 
 // score alg
 
 function transformedRating(player) {
-    var score = player.score;
+  const { score } = player;
 
-
-    return Math.pow(10, score / NORMALISATION);
+  return Math.pow(10, score / NORMALISATION)
 }
 
 function expectedScore(playerA, playerB) {
-    var tA = transformedRating(playerA);
-    var tB = transformedRating(playerB);
+  const tA = transformedRating(playerA);
+  const tB = transformedRating(playerB);
 
-    return tA / (tA + tB);
+  return tA / (tA + tB)
 }
 
 function updatedScore(player, opponents, s) {
 
-    if (opponents.length === 0) {
+  if (opponents.length === 0) {
 
-        return player.score;
-    } else {
+    return player.score
 
-        var sum = opponents.map(function (opp) {
-            return s - expectedScore(player, opp);
-        }).reduce(function (x, y) {
-            return x + y;
-        }, 0);
+  } else {
 
-        return player.score + K * (sum / opponents.length);
-    }
+    const sum = opponents
+      .map(opp => s - expectedScore(player, opp))
+      .reduce((x, y) => x + y, 0);
+
+    return player.score + (K / opponents.length ) * (sum / opponents.length);
+
+  }
+
 }
 
 function leaderBoard(state) {
-    return _.values(state.players).sort(function (p1, p2) {
-        return p2.score - p1.score;
-    });
+  return _.values(state.players).sort((p1, p2) => p2.score - p1.score)
 }
 
 // Storage
 
-function getLocalState() {
-    var data = localStorage.getItem('state');
+let state;
 
-    return _.isNull(data) ? { players: {}, games: [] } : JSON.parse(data);
+function getLocalState() {
+//    const data = localStorage.getItem('state');
+//
+//    return (
+//        _.isNull(data)
+//            ? { players: {}, games: [] }
+//            : JSON.parse(data)
+//    )
+  return (
+    _.isUndefined(state)
+      ? { players: {}, games: [] }
+      : state
+  )
 }
 
 function setLocalState(data) {
-    localStorage.setItem('state', JSON.stringify(data));
+  state = data;
+//    localStorage.setItem('state', JSON.stringify(
+//        data
+//    ));
 }
 
 function modifyState(redFn, arg) {
-    setLocalState(redFn(getLocalState(), arg));
+  setLocalState(
+    redFn(
+      getLocalState(),
+      arg
+    )
+  );
 }
 
-function _saveGame(game) {
-    modifyState(reportGame, game);
+function _reportGame(game) {
+  modifyState(reportGame, game);
 }
 
-function _createPlayer(name) {
-    modifyState(addPlayer(), name);
+function _addPlayer(name) {
+  modifyState(addPlayer, name);
 }
 
 function _getLeaderBoard() {
-    return leaderBoard(getLocalState());
+  return leaderBoard(getLocalState())
 }
 
+//
+_addPlayer('Lenart');
+_addPlayer('Jens');
+_addPlayer('Gerrit');
+
+_reportGame({
+  teamA: {
+    score: 10,
+    players: ['Jens', 'Gerrit']
+  },
+  teamB: {
+    score: 0,
+    players: ['Lenart']
+  }
+});
+
+const getPlayer = (playerName) => {
+  return getLocalState().players[playerName];
+};
+
+const drawList = ({
+  list, template, comparator, filter
+}) => {
+  list.html('');
+
+  if(!filter) {
+    filter = (player) => player;
+  }
+
+  const currentState = getLocalState();
+  const players = currentState.players;
+
+  const playersArray = [];
+  _.each(players, (player) => {
+    playersArray.push(player);
+  });
+
+  const sortedPlayers = playersArray.sort(comparator).filter(filter);
+
+  _.each(sortedPlayers, (player, index) => {
+    list.append(template(_.extend(player, {
+      index
+    })));
+  });
+};
+
+const drawPlayersList = () => {
+  drawList({
+    list: playersList,
+    template: userListItemTemplate,
+    comparator: (playerA, playerB) => {
+      return playerA.score > playerB.score ? -1 : 1;
+    }
+  });
+};
+
+const drawSelectPlayerList = () => {
+  drawList({
+    list: selectPlayerList,
+    template: selectPlayerListItemTemplate,
+    comparator: (playerA, playerB) => {
+      return playerA.name > playerB.name ? 1 : -1;
+    },
+    filter: (player) => {
+      return !currentGame.isAlreadyInGame(player.name);
+    }
+  });
+};
+
+const redrawPlayersLists = () => {
+  drawPlayersList();
+  drawSelectPlayerList();
+};
+
+class Game {
+  constructor() {
+    this.teamA = {
+      score: 0,
+      players: []
+    };
+    this.teamB = _.cloneDeep(this.teamA);
+  }
+
+  setPlayer({ team, index, player }) {
+    this[team].players[index] = player;
+  }
+
+  isAlreadyInGame(player) {
+    return this.teamA.players.indexOf(player) > -1 || this.teamB.players.indexOf(player) > -1;
+  }
+
+  getReport() {
+    return _.pick(this, ['teamA', 'teamB']);
+  }
+}
+
+const redrawGame = (game) => {
+  [
+    {
+      team: 'A',
+      index: 0
+    },
+    {
+      team: 'A',
+      index: 1
+    },
+    {
+      team: 'B',
+      index: 0
+    },
+    {
+      team: 'B',
+      index: 1
+    }
+  ].forEach(({ team, index }) => {
+    const $el = $(`#team${team}Player${index}`);
+    const playerName = _.get(game, `team${team}.players[${index}]`);
+
+    if (playerName) {
+      const player = getPlayer(playerName);
+      $el.html(playerSetTemplate(player));
+    } else {
+      $el.html(playerNotSetTemplate());
+    }
+  });
+};
+
+const selectPlayerModal = $('#selectPlayerModal').modal();
+
+const app = () => {
+  newPlayerForm.on('submit', (e) => {
+    e.preventDefault();
+    const currentState = getLocalState();
+    const players = currentState.players;
+
+    const newPlayerName = newPlayerNameInput.val();
+
+    if (!newPlayerName) {
+      return alert('Missing player name!');
+    }
+
+    if (players[newPlayerName]) {
+      return alert('Player name already taken!');
+    }
+
+    _addPlayer(newPlayerName);
+
+    $('.ui.modal.add.player').modal('hide');
+    newPlayerNameInput.val('');
+
+    redrawPlayersLists();
+  });
+
+  currentGame = new Game();
+
+  $('.addPlayerToTeam').on('click', function () {
+    const $el = $(this);
+    const team = $el.data('team');
+    const index = $el.data('playerIndex');
+
+    selectPlayerModal.player = {
+      team,
+      index
+    };
+
+    selectPlayerModal.modal('show');
+  });
+
+  selectPlayerList.on('click', '.playerSelect', function () {
+    const $el = $(this);
+    const player = $el.data('playerName');
+
+    const playerData = _.extend(_.cloneDeep(selectPlayerModal.player), { player });
+
+    currentGame.setPlayer(playerData);
+
+    selectPlayerModal.player = {};
+    selectPlayerModal.modal('hide');
+
+    redrawGame(currentGame);
+    drawSelectPlayerList();
+  });
+
+  redrawGame();
+  redrawPlayersLists();
+};
+
+app();
+
 // Playground
+//
+// _addPlayer('Lenart');
+// _addPlayer('Jens');
+// _addPlayer('Gerrit');
+//
+// _reportGame({
+//   teamA: {
+//     score: 10,
+//     players: ['Jens', 'Gerrit']
+//   },
+//   teamB: {
+//     score: 0,
+//     players: ['Lenart']
+//   }
+// });
 
 /*
 
-let state = {
-    games: [],
-    players: {}
-};
+ _reportGame({
+ teamA: {
+ score: 3,
+ players: ['Jens']
+ },
+ teamB: {
+ score: 10,
+ players: ['Lenart']
+ }
+ });
 
-state = addPlayer(state, 'Gerrit');
-state = addPlayer(state, 'Jens');
-state = addPlayer(state, 'Lennart');
-state = addPlayer(state, 'Bogdan');
-state = addPlayer(state, 'Alex');
+ _addPlayer('Bogdan');
 
-const games = [{
-    teamA: {
-        score: 0,
-        players: ['Gerrit']
-    },
-    teamB: {
-        score: 10,
-        players: ['Jens']
-    }
-},{
-    teamA: {
-        score: 10,
-        players: ['Gerrit']
-    },
-    teamB: {
-        score: 0,
-        players: ['Jens']
-    }
-},{
-    teamA: {
-        score: 5,
-        players: ['Gerrit']
-    },
-    teamB: {
-        score: 10,
-        players: ['Jens']
-    }
-},{
-    teamA: {
-        score: 6,
-        players: ['Gerrit']
-    },
-    teamB: {
-        score: 10,
-        players: ['Jens']
-    }
-},{
-    teamA: {
-        score: 2,
-        players: ['Bogdan']
-    },
-    teamB: {
-        score: 2,
-        players: ['Jens']
-    }
-},{
-    teamA: {
-        score: 10,
-        players: ['Bogdan', 'Gerrit']
-    },
-    teamB: {
-        score: 0,
-        players: ['Jens', 'Alex']
-    }
-}];
+ _reportGame({
+ teamA: {
+ score: 0,
+ players: ['Lenart']
+ },
+ teamB: {
+ score: 10,
+ players: ['Bogdan']
+ }
+ });
 
-state = games.reduce( reportGame, state );
+ _reportGame({
+ teamA: {
+ score: 0,
+ players: ['Jens']
+ },
+ teamB: {
+ score: 10,
+ players: ['Bogdan']
+ }
+ });
 
-console.log(
-    JSON.stringify( state, undefined, 2 )
-);
+ _reportGame({
+ teamA: {
+ score: 0,
+ players: ['Gerrit']
+ },
+ teamB: {
+ score: 10,
+ players: ['Bogdan']
+ }
+ });
 
-console.log(
-    JSON.stringify( leaderBoard(state), undefined, 2 )
-);
+ */
 
-console.log(
-    JSON.stringify(
-        reportGame( state, games[0] ),
-        undefined, 2
-    )
-);
-
-*/
-
-module.exports = {
-    _saveGame: _saveGame,
-    _createPlayer: _createPlayer,
-    _getLeaderBoard: _getLeaderBoard
-};
-
-//# sourceMappingURL=dataHandling-compiled.js.map
+// Output
+//
+// console.log(
+//   JSON.stringify(_getLeaderBoard(), undefined, 2)
+// );

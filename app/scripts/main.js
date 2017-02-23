@@ -18,8 +18,7 @@ $('.ui.modal').modal({
     inverted: true,
     // blurring: true
 });
-$('.ui.modal.add.player').modal('attach events', '.add.player.action', 'show');
-$('.ui.modal.select.player').modal('attach events', '.select.player.action', 'show');
+$('#addPLayerModal').modal('attach events', '.add.player.action', 'show');
 $('.ui.modal').modal('attach events', '.close.button', 'hide');
 $('.ui.modal').modal('setting', 'transition', 'fade up');
 
@@ -86,9 +85,7 @@ $(function() {
         });
 
     }).resize();
-    $('#gallery').glide({
-        type: 'carousel'
-    });
+
 });
 $('.ui.rating')
     .rating('setting', 'clearable', true);
@@ -103,5 +100,8 @@ $('.closefullscreen').on('click', function() {
 $('.ui.accordion')
     .accordion();
 
+const app = () => {
+  console.log('hello');
+};
 
-
+app();
