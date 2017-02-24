@@ -1,11 +1,26 @@
 'use strict';
 
-let currentGame;
+const ENABLE_LOCAL_STORAGE = true;
+const MEH = '¯\\_(ツ)_/¯';
+const SLACK_TOKEN = 'SLACK_TOKEN_HERE';
+const STARTING_SCORE = 1500;
+const NORMALISATION = 400;
+const K = 32;
 
+// ELEMENTS
 const playersList = $('#playersList');
 const selectPlayerList = $('#selectPlayerList');
 const newPlayerForm = $('#newPlayerForm');
 const newPlayerNameInput = $('#newPlayerNameInput');
+const selectPlayerModal = $('#selectPlayerModal').modal();
+const startGameButton = $('#startGameButton');
+const addPlayerModal = $('.ui.modal.add.player');
+const addPlayerToTeam = $('.addPlayerToTeam');
+const finishGameButton = $('#finishGameButton');
+const $teamAScoreInput = $('#teamAScoreInput');
+const $teamBScoreInput = $('#teamBScoreInput');
+const $rematchButton = $('#rematchButton');
+const $endGameButton = $('#endGameButton');
 
 // TEMPLATES
 // Use custom template delimiters.
@@ -16,24 +31,17 @@ const playerNotSetTemplate = _.template($('#playerNotSetTemplate').text());
 const playerSetTemplate = _.template($('#playerSetTemplate').text());
 
 // END TEMPLATES
-
-const STARTING_SCORE = 1500;
-const NORMALISATION = 400;
-const K = 32;
-
-function addPlayer(oldState, name) {
+function addPlayer(oldState, player) {
 
   const players = oldState.players;
 
-  if (_.isUndefined(players[name])) {
+  if (_.isUndefined(players[player.name])) {
+    player.score = STARTING_SCORE;
 
     return {
       games: oldState.games,
-      players: _.extend({}, players, {
-        [name]: {
-          name,
-          score: STARTING_SCORE
-        }
+      players: _.extend(_.cloneDeep(players), {
+        [player.name]: player
       })
     }
 
@@ -137,13 +145,16 @@ function leaderBoard(state) {
 let state;
 
 function getLocalState() {
-  const data = localStorage.getItem('state');
+  if (ENABLE_LOCAL_STORAGE) {
+    const data = localStorage.getItem('state');
 
-  return (
-    _.isNull(data)
-      ? { players: {}, games: [] }
-      : JSON.parse(data)
-  )
+    return (
+      _.isNull(data)
+        ? { players: {}, games: [] }
+        : JSON.parse(data)
+    )
+  }
+
   return (
     _.isUndefined(state)
       ? { players: {}, games: [] }
@@ -153,9 +164,11 @@ function getLocalState() {
 
 function setLocalState(data) {
   state = data;
-  localStorage.setItem('state', JSON.stringify(
-    data
-  ));
+  if (ENABLE_LOCAL_STORAGE) {
+    localStorage.setItem('state', JSON.stringify(
+      data
+    ));
+  }
 }
 
 function modifyState(redFn, arg) {
@@ -171,8 +184,8 @@ function _reportGame(game) {
   modifyState(reportGame, game);
 }
 
-function _addPlayer(name) {
-  modifyState(addPlayer, name);
+function _addPlayer(player) {
+  modifyState(addPlayer, player);
 }
 
 function _getLeaderBoard() {
@@ -194,6 +207,70 @@ function _getLeaderBoard() {
 //     players: ['Lenart']
 //   }
 // });
+class Game {
+  constructor(initialState = {}) {
+    this.state = _.defaultsDeep(initialState, {
+      teamA: {
+        score: 0,
+        players: []
+      },
+      teamB: {
+        score: 0,
+        players: []
+      }
+    });
+
+    this.inProgress = false;
+  }
+
+  setPlayer({ team, index, player }) {
+    this.state[team].players[index] = player;
+  }
+
+  isAlreadyInGame(player) {
+    return this.state.teamA.players.indexOf(player) > -1 || this.state.teamB.players.indexOf(player) > -1;
+  }
+
+  getReport() {
+    return _.pick(this.state, ['teamA', 'teamB']);
+  }
+
+  setFinalScore(teamAScore, teamBScore) {
+    this.state.teamA.score = teamAScore;
+    this.state.teamB.score = teamBScore;
+  }
+
+  start() {
+    if (this.state.teamA.players.length < 1 || this.state.teamB.players.length < 1) {
+      throw new Error('Not enough players');
+    }
+
+    this.inProgress = true;
+  }
+}
+
+class Slack {
+  constructor() {
+    this.users = [];
+  }
+
+  init() {
+    return this.retrieveUsersList()
+      .done((users) => {
+        this.users = users.members;
+      });
+  }
+
+  findUserByName(name) {
+    return _.find(this.users, (user) => {
+      return user.name === name;
+    });
+  }
+
+  retrieveUsersList() {
+    return $.get(`https://slack.com/api/users.list?token=${SLACK_TOKEN}`);
+  }
+}
 
 const getPlayer = (playerName) => {
   return getLocalState().players[playerName];
@@ -235,7 +312,7 @@ const drawPlayersList = () => {
   });
 };
 
-const drawSelectPlayerList = () => {
+const drawSelectPlayerList = (currentGame) => {
   drawList({
     list: selectPlayerList,
     template: selectPlayerListItemTemplate,
@@ -248,49 +325,12 @@ const drawSelectPlayerList = () => {
   });
 };
 
-const redrawPlayersLists = () => {
+const redrawPlayersLists = (currentGame) => {
   drawPlayersList();
-  drawSelectPlayerList();
+  drawSelectPlayerList(currentGame);
 };
 
-class Game {
-  constructor() {
-    this.teamA = {
-      score: 0,
-      players: []
-    };
-    this.teamB = _.cloneDeep(this.teamA);
-
-    this.inProgress = false;
-  }
-
-  setPlayer({ team, index, player }) {
-    this[team].players[index] = player;
-  }
-
-  isAlreadyInGame(player) {
-    return this.teamA.players.indexOf(player) > -1 || this.teamB.players.indexOf(player) > -1;
-  }
-
-  getReport() {
-    return _.pick(this, ['teamA', 'teamB']);
-  }
-
-  setFinalScore(teamAScore, teamBScore) {
-    this.teamA.score = teamAScore;
-    this.teamB.score = teamBScore;
-  }
-
-  start() {
-    if (this.teamA.players.length < 1 || this.teamB.players.length < 1) {
-      throw new Error('Not enough players');
-    }
-
-    this.inProgress = true;
-  }
-}
-
-const redrawGame = () => {
+const redrawGame = (currentGame) => {
   [
     {
       team: 'A',
@@ -310,7 +350,7 @@ const redrawGame = () => {
     }
   ].forEach(({ team, index }) => {
     const $el = $(`#team${team}Player${index}`);
-    const playerName = _.get(currentGame, `team${team}.players[${index}]`);
+    const playerName = _.get(currentGame, `state.team${team}.players[${index}]`);
 
     if (playerName) {
       const player = getPlayer(playerName);
@@ -329,9 +369,69 @@ const redrawGame = () => {
   }
 };
 
-const selectPlayerModal = $('#selectPlayerModal').modal();
-
 const app = () => {
+  const slack = new Slack();
+  let currentGame = new Game();
+
+  slack.init()
+    .done(() => {
+      redrawGame(currentGame);
+      redrawPlayersLists(currentGame);
+    })
+    .fail((e) => {
+      console.error(e);
+      alert('Whoops... Slack failed to provide us with users!');
+    });
+
+  // methods
+  const startNewGame = () => {
+    try {
+      currentGame.start();
+
+      redrawGame(currentGame);
+    } catch (e) {
+      alert(e);
+    }
+  };
+
+  const resetGame = (initialGameState = {}) => {
+    currentGame = new Game(initialGameState);
+
+    $teamAScoreInput.val(_.get(initialGameState, 'teamA.score', 0));
+    $teamBScoreInput.val(_.get(initialGameState, 'teamB.score', 0));
+
+    redrawGame(currentGame);
+    redrawPlayersLists(currentGame);
+  };
+
+  const finishGame = (passedParams) => {
+    const params = _.defaults(passedParams || {}, {
+      rematch: false
+    });
+
+    const teamAScore = Number($teamAScoreInput.val());
+    const teamBScore = Number($teamBScoreInput.val());
+
+    currentGame.setFinalScore(teamAScore, teamBScore);
+
+    const report = _.cloneDeep(currentGame.getReport());
+    _reportGame(report);
+
+    if (params.rematch) {
+      let initialGameState = _.cloneDeep(report);
+      initialGameState.teamA.score = 0;
+      initialGameState.teamB.score = 0;
+
+      resetGame(initialGameState);
+      startNewGame();
+    } else {
+      resetGame();
+    }
+  };
+
+  const rematchGame = () => finishGame({ rematch: true });
+
+  // Listeners
   newPlayerForm.on('submit', (e) => {
     e.preventDefault();
     const currentState = getLocalState();
@@ -347,17 +447,21 @@ const app = () => {
       return alert('Player name already taken!');
     }
 
-    _addPlayer(newPlayerName);
+    const slackUser = slack.findUserByName(newPlayerName);
 
-    $('.ui.modal.add.player').modal('hide');
+    if (!slackUser) {
+      return alert(`Player name must be a valid slack username!\n${MEH}`);
+    }
+
+    _addPlayer(slackUser);
+
+    addPlayerModal.modal('hide');
     newPlayerNameInput.val('');
 
-    redrawPlayersLists();
+    redrawPlayersLists(currentGame);
   });
 
-  currentGame = new Game();
-
-  $('.addPlayerToTeam').on('click', function () {
+  addPlayerToTeam.on('click', function () {
     const $el = $(this);
     const team = $el.data('team');
     const index = $el.data('playerIndex');
@@ -381,110 +485,20 @@ const app = () => {
     selectPlayerModal.player = {};
     selectPlayerModal.modal('hide');
 
-    redrawGame();
-    drawSelectPlayerList();
+    redrawGame(currentGame);
+    drawSelectPlayerList(currentGame);
   });
 
-  $('#startGameButton').on('click', () => {
-    try {
-      currentGame.start();
+  startGameButton.on('click', startNewGame);
 
-      redrawGame();
-    } catch (e) {
-      alert(e);
-    }
+  finishGameButton.on('click', () => {
+    finishGame();
+    resetGame();
   });
 
-  $('#finishGameButton').on('click', () => {
-    const teamAScore = Number($('#teamAScoreInput').val());
-    const teamBScore = Number($('#teamBScoreInput').val());
+  $rematchButton.on('click', rematchGame);
 
-    currentGame.setFinalScore(teamAScore, teamBScore);
-
-    const report = _.cloneDeep(currentGame.getReport());
-    _reportGame(report);
-
-    currentGame = new Game();
-
-    redrawGame();
-    redrawPlayersLists();
-  });
-
-  redrawGame();
-  redrawPlayersLists();
+  $endGameButton.on('click', resetGame);
 };
 
 app();
-
-// Playground
-//
-// _addPlayer('Lenart');
-// _addPlayer('Jens');
-// _addPlayer('Gerrit');
-//
-// _reportGame({
-//   teamA: {
-//     score: 10,
-//     players: ['Jens', 'Gerrit']
-//   },
-//   teamB: {
-//     score: 0,
-//     players: ['Lenart']
-//   }
-// });
-
-/*
-
- _reportGame({
- teamA: {
- score: 3,
- players: ['Jens']
- },
- teamB: {
- score: 10,
- players: ['Lenart']
- }
- });
-
- _addPlayer('Bogdan');
-
- _reportGame({
- teamA: {
- score: 0,
- players: ['Lenart']
- },
- teamB: {
- score: 10,
- players: ['Bogdan']
- }
- });
-
- _reportGame({
- teamA: {
- score: 0,
- players: ['Jens']
- },
- teamB: {
- score: 10,
- players: ['Bogdan']
- }
- });
-
- _reportGame({
- teamA: {
- score: 0,
- players: ['Gerrit']
- },
- teamB: {
- score: 10,
- players: ['Bogdan']
- }
- });
-
- */
-
-// Output
-//
-// console.log(
-//   JSON.stringify(_getLeaderBoard(), undefined, 2)
-// );

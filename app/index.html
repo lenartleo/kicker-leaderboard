@@ -26,7 +26,7 @@
   <!-- Place favicon.ico in the root directory -->
   <!-- build:css styles/vendor.css -->
   <!-- bower:css -->
-  <link rel="stylesheet" href="/bower_components/semantic/dist/semantic.css"/>
+  <link rel="stylesheet" href="/bower_components/semantic/dist/semantic.css" />
   <!-- endbower -->
   <!-- endbuild -->
   <!-- build:css styles/main.css -->
@@ -85,9 +85,7 @@
       <div class="field ">
         <input type="text" name="player" placeholder="Player ID" id="newPlayerNameInput">
       </div>
-      <div class="ui inverted big basic fluid button">
-        ADD
-      </div>
+      <button class="ui inverted big basic fluid button">ADD</button>
     </form>
   </div>
 </div>
@@ -105,7 +103,7 @@
 
     <script type="text/x-handlebars-template" id="selectPlayerListItemTemplate">
       <div class="item playerSelect" data-player-name="{{name}}">
-        <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
+        <img class="ui avatar image" src="{{profile.image_192}}">
         <div class="content">
           <div class="header">{{name}}</div>
         </div>
@@ -125,7 +123,7 @@
 </script>
 
 <script type="text/x-handlebars-template" id="playerSetTemplate">
-  <img class="ui avatar image" src="/images/TEMP/avatar.jpg">
+  <img class="ui avatar image" src="{{profile.image_192}}">
   <div class="content">
     <div class="header">{{name}}</div>
   </div>
@@ -206,11 +204,11 @@
             </div>
           </div>
           <div class="">
-            <button class="ui inverted basic massive button">
+            <button class="ui inverted basic massive button" type="button" id="rematchButton">
               <i class="repeat icon"></i> REMATCH
             </button>
-            <button class="ui inverted basic massive button">
-              <i class="soccer icon"></i> NEW GAME
+            <button class="ui inverted basic massive button" type="button" id="endGameButton">
+              <i class="soccer icon"></i> END GAME
             </button>
           </div>
         </div>
@@ -230,7 +228,7 @@
         <div class="left floated content">
           <div class="left floated player rank">{{index + 1}}.</div>
           <div class="left floated content">
-            <img class="ui avatar image" src="/images/TEMP/avatar.jpg"> {{name}}
+            <img class="ui avatar image" src="{{profile.image_192}}"> {{name}}
           </div>
         </div>
       </div>
