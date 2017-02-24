@@ -412,7 +412,7 @@ const app = () => {
     const teamAScore = Number($teamAScoreInput.val());
     const teamBScore = Number($teamBScoreInput.val());
 
-    if(teamAScore + teamBScore < 1) {
+    if (teamAScore + teamBScore < 1) {
       throw new Error('Invalid end score');
     }
 
@@ -434,7 +434,13 @@ const app = () => {
     }
   };
 
-  const rematchGame = () => finishGame({ rematch: true });
+  const rematchGame = () => {
+    try {
+      finishGame({ rematch: true });
+    } catch (e) {
+      alert(e);
+    }
+  };
 
   // Listeners
   newPlayerForm.on('submit', (e) => {
