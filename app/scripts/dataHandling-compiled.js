@@ -412,9 +412,14 @@ const app = () => {
     const teamAScore = Number($teamAScoreInput.val());
     const teamBScore = Number($teamBScoreInput.val());
 
+    if(teamAScore + teamBScore < 1) {
+      throw new Error('Invalid end score');
+    }
+
     currentGame.setFinalScore(teamAScore, teamBScore);
 
     const report = _.cloneDeep(currentGame.getReport());
+
     _reportGame(report);
 
     if (params.rematch) {
@@ -492,8 +497,12 @@ const app = () => {
   startGameButton.on('click', startNewGame);
 
   finishGameButton.on('click', () => {
-    finishGame();
-    resetGame();
+    try {
+      finishGame();
+      resetGame();
+    } catch (e) {
+      alert(e);
+    }
   });
 
   $rematchButton.on('click', rematchGame);

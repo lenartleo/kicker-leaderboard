@@ -99,9 +99,3 @@ $('.closefullscreen').on('click', function() {
 });
 $('.ui.accordion')
     .accordion();
-
-const app = () => {
-  console.log('hello');
-};
-
-app();

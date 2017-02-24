@@ -85,13 +85,19 @@ gulp.task('fonts', () => {
     .pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('extras', () => {
+gulp.task('extras', ['copySemanticThemes'], () => {
   return gulp.src([
     'app/*.*',
     '!app/*.html'
   ], {
     dot: true
   }).pipe(gulp.dest('dist'));
+});
+
+gulp.task('copySemanticThemes', () => {
+  return gulp.src([
+    'bower_components/semantic/dist/themes/default/**/*'
+  ]).pipe(gulp.dest('dist/styles/themes/default'));
 });
 
 gulp.task('clean', del.bind(null, ['.tmp', 'dist']));
